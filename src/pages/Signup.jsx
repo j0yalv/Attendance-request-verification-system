@@ -130,21 +130,23 @@ function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-md w-full max-w-md p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Create Account</h1>
-        <p className="text-gray-500 text-sm mb-6">Use your @pace.edu.in email</p>
+    <div className="auth-shell">
+      <div className="auth-panel">
+      <div className="auth-card">
+        <p className="auth-brand">AttendFlow</p>
+        <h1 className="auth-title">Create account</h1>
+        <p className="auth-copy mb-6">Use your @pace.edu.in email</p>
 
-        <div className="flex rounded-lg overflow-hidden border border-gray-200 mb-6">
+        <div className="mb-6 grid grid-cols-2 rounded-lg border border-slate-200 bg-slate-100 p-1">
           <button
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${role === 'student' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+            className={`rounded-md py-2 text-sm font-semibold transition ${role === 'student' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
             onClick={() => setRole('student')}
             type="button"
           >
             Student
           </button>
           <button
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${role === 'faculty' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+            className={`rounded-md py-2 text-sm font-semibold transition ${role === 'faculty' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
             onClick={() => setRole('faculty')}
             type="button"
           >
@@ -160,7 +162,7 @@ function Signup() {
             value={formData.name}
             onChange={handleChange}
             required
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="field-input"
           />
           <input
             name="email"
@@ -169,7 +171,7 @@ function Signup() {
             value={formData.email}
             onChange={handleChange}
             required
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="field-input"
           />
           <input
             name="password"
@@ -178,7 +180,7 @@ function Signup() {
             value={formData.password}
             onChange={handleChange}
             required
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="field-input"
           />
           <input
             name="dept"
@@ -187,7 +189,7 @@ function Signup() {
             value={formData.dept}
             onChange={handleChange}
             required
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="field-input"
           />
 
           {role === 'student' && (
@@ -199,7 +201,7 @@ function Signup() {
                 value={formData.usn}
                 onChange={handleChange}
                 required
-                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="field-input"
               />
               <input
                 name="semester"
@@ -210,28 +212,28 @@ function Signup() {
                 required
                 min="1"
                 max="8"
-                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="field-input"
               />
             </>
           )}
 
           {role === 'faculty' && subjects.length > 0 && (
             <div>
-              <p className="text-sm text-gray-600 mb-2 font-medium">
+              <p className="field-label mb-2">
                 Select subjects you teach
               </p>
-              <div className="border border-gray-200 rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
+              <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-3">
                 {subjects.map(s => (
-                  <label key={s.subject_code} className="flex items-center gap-3 cursor-pointer">
+                  <label key={s.subject_code} className="flex cursor-pointer items-start gap-3 rounded-md p-2 transition hover:bg-white">
                     <input
                       type="checkbox"
                       checked={selectedSubjects.includes(s.subject_code)}
                       onChange={() => toggleSubject(s.subject_code)}
-                      className="accent-blue-600"
+                      className="mt-1 accent-blue-600"
                     />
-                    <span className="text-sm text-gray-700">
-                      {s.subject_code} — {s.subject_name}
-                      <span className="text-gray-400 ml-1">(Sem {s.semester})</span>
+                    <span className="text-sm leading-5 text-slate-700">
+                      {s.subject_code} - {s.subject_name}
+                      <span className="ml-1 text-slate-400">(Sem {s.semester})</span>
                     </span>
                   </label>
                 ))}
@@ -240,26 +242,27 @@ function Signup() {
           )}
 
           {role === 'faculty' && formData.dept && subjects.length === 0 && (
-            <p className="text-sm text-gray-400">
+            <p className="helper-text">
               No subjects found for {formData.dept}
             </p>
           )}
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="alert alert-error">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="btn-primary w-full"
           >
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="mt-5 text-center text-sm text-slate-500">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 hover:underline">Log in</Link>
+          <Link to="/login" className="font-semibold text-blue-700 hover:underline">Log in</Link>
         </p>
+      </div>
       </div>
     </div>
   )

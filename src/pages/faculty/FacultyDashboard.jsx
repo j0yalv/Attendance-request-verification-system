@@ -79,12 +79,12 @@ function FacultyDashboard() {
 
   const statusClassName = (status) => {
     const styles = {
-      Pending: 'bg-yellow-100 text-yellow-800 ring-yellow-200',
-      Approved: 'bg-green-100 text-green-800 ring-green-200',
-      Rejected: 'bg-red-100 text-red-800 ring-red-200',
+      Pending: 'status-pending',
+      Approved: 'status-approved',
+      Rejected: 'status-rejected',
     }
 
-    return styles[status] || 'bg-gray-100 text-gray-700 ring-gray-200'
+    return styles[status] || 'status-neutral'
   }
 
   const formatDateRange = (startDate, endDate) => {
@@ -148,8 +148,8 @@ function FacultyDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="rounded-lg bg-white px-6 py-4 text-sm font-medium text-slate-600 shadow-sm ring-1 ring-slate-200">
+      <div className="app-shell flex items-center justify-center">
+        <div className="loading-card">
           Loading faculty dashboard...
         </div>
       </div>
@@ -157,18 +157,18 @@ function FacultyDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div className="app-shell">
+      <div className="page-frame">
+        <header className="dashboard-header dashboard-header-inner">
           <div>
-            <p className="text-sm font-medium text-blue-600">Faculty Dashboard</p>
-            <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+            <p className="eyebrow">Faculty Dashboard</p>
+            <h1 className="page-title">
               Welcome{faculty?.name ? `, ${faculty.name}` : ''}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">{faculty?.dept} department requests</p>
+            <p className="muted-copy">{faculty?.dept} department requests</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="metric-pill">
               {requests.filter((request) => request.status === 'Pending').length} pending request
               {requests.filter((request) => request.status === 'Pending').length === 1 ? '' : 's'}
             </div>
@@ -177,7 +177,7 @@ function FacultyDashboard() {
                 await supabase.auth.signOut()
                 navigate('/login')
               }}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 hover:bg-slate-50"
+              className="btn-secondary"
             >
               Sign out
             </button>
@@ -186,61 +186,62 @@ function FacultyDashboard() {
 
         {(error || success) && (
           <div
-            className={`rounded-lg border px-4 py-3 text-sm ${
+            className={`alert ${
               error
-                ? 'border-red-200 bg-red-50 text-red-700'
-                : 'border-green-200 bg-green-50 text-green-700'
+                ? 'alert-error'
+                : 'alert-success'
             }`}
           >
             {error || success}
           </div>
         )}
 
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-lg font-semibold text-slate-900">Attendance requests</h2>
+        <section className="surface-card">
+          <div className="section-heading">
+            <h2 className="section-title">Attendance requests</h2>
+            <p className="section-subtitle">Review pending requests and record faculty remarks.</p>
           </div>
 
           {requests.length === 0 ? (
-            <div className="px-5 py-12 text-center">
-              <h3 className="text-base font-semibold text-slate-900">No requests assigned</h3>
+            <div className="empty-state">
+              <h3 className="text-base font-semibold text-slate-950">No requests assigned</h3>
               <p className="mt-1 text-sm text-slate-500">Student requests sent to you will appear here.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <table className="data-table">
+                <thead>
                   <tr>
-                    <th className="px-5 py-3">Student</th>
-                    <th className="px-5 py-3">Subject</th>
-                    <th className="px-5 py-3">Category</th>
-                    <th className="px-5 py-3">Dates</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Description</th>
-                    <th className="px-5 py-3">Proof</th>
-                    <th className="px-5 py-3">Action</th>
+                    <th>Student</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Dates</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                    <th>Proof</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody>
                   {requests.map((request) => {
                     const student = studentsById[request.student_id]
                     const isPending = request.status === 'Pending'
                     const isActive = activeDecision?.requestId === request.request_id
 
                     return (
-                      <tr key={request.request_id} className="align-top">
-                        <td className="px-5 py-4">
-                          <div className="font-medium text-slate-900">{student?.name || 'Student unavailable'}</div>
+                      <tr key={request.request_id}>
+                        <td>
+                          <div className="font-semibold text-slate-950">{student?.name || 'Student unavailable'}</div>
                           <div className="mt-0.5 text-xs text-slate-500">{student?.usn || request.student_id}</div>
                         </td>
-                        <td className="px-5 py-4 font-medium text-slate-900">{request.subject_code}</td>
-                        <td className="px-5 py-4 text-slate-600">{request.category}</td>
-                        <td className="px-5 py-4 text-slate-600">
+                        <td className="font-semibold text-slate-950">{request.subject_code}</td>
+                        <td className="text-slate-600">{request.category}</td>
+                        <td className="text-slate-600">
                           {formatDateRange(request.start_date, request.end_date)}
                         </td>
-                        <td className="px-5 py-4">
+                        <td>
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${statusClassName(
+                            className={`status-pill ${statusClassName(
                               request.status,
                             )}`}
                           >
@@ -250,14 +251,14 @@ function FacultyDashboard() {
                             <p className="mt-2 max-w-xs text-xs text-slate-500">{request.faculty_remark}</p>
                           )}
                         </td>
-                        <td className="max-w-xs px-5 py-4 text-slate-600">{request.description}</td>
-                        <td className="px-5 py-4">
+                        <td className="max-w-xs text-slate-600">{request.description}</td>
+                        <td>
                           {request.proof_url ? (
                             <a
                               href={request.proof_url}
                               target="_blank"
                               rel="noreferrer"
-                              className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                              className="font-semibold text-blue-700 transition hover:text-blue-800 hover:underline"
                             >
                               View proof
                             </a>
@@ -265,30 +266,30 @@ function FacultyDashboard() {
                             <span className="text-slate-400">No proof</span>
                           )}
                         </td>
-                        <td className="px-5 py-4">
+                        <td>
                           {isPending ? (
-                            <div className="min-w-56 space-y-3">
+                            <div className="min-w-64 space-y-3">
                               <div className="flex gap-2">
                                 <button
                                   type="button"
                                   onClick={() => openDecision(request.request_id, 'Approved')}
-                                  className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-green-700"
+                                  className="btn-success"
                                 >
                                   Approve
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => openDecision(request.request_id, 'Rejected')}
-                                  className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
+                                  className="btn-danger"
                                 >
                                   Reject
                                 </button>
                               </div>
 
                               {isActive && (
-                                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 shadow-inner">
                                   <label className="block">
-                                    <span className="text-xs font-medium text-slate-700">
+                                    <span className="text-xs font-semibold text-slate-700">
                                       Remark {activeDecision.status === 'Rejected' ? '(required)' : '(optional)'}
                                     </span>
                                     <input
@@ -296,7 +297,7 @@ function FacultyDashboard() {
                                       value={activeDecision.remark}
                                       onChange={handleRemarkChange}
                                       placeholder="Add a remark"
-                                      className="mt-1 w-full rounded-md border border-slate-300 px-2.5 py-2 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                      className="field-input mt-1 text-xs"
                                     />
                                   </label>
                                   <div className="mt-3 flex gap-2">
@@ -304,7 +305,7 @@ function FacultyDashboard() {
                                       type="button"
                                       onClick={confirmDecision}
                                       disabled={updating}
-                                      className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                      className="btn-primary min-h-0 px-3 py-1.5 text-xs"
                                     >
                                       {updating ? 'Saving...' : 'Confirm'}
                                     </button>
@@ -312,7 +313,7 @@ function FacultyDashboard() {
                                       type="button"
                                       onClick={() => setActiveDecision(null)}
                                       disabled={updating}
-                                      className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                                      className="btn-secondary min-h-0 px-3 py-1.5 text-xs"
                                     >
                                       Cancel
                                     </button>

@@ -7,8 +7,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
 
 const initialForm = {
-  subject_code: '',
-  faculty_id: '',
   category: 'Hackathon',
   description: '',
   start_date: '',
@@ -22,6 +20,7 @@ function StudentDashboard() {
   const [facultyMap, setFacultyMap] = useState({})
   const [requests, setRequests] = useState([])
   const [formData, setFormData] = useState(initialForm)
+  const [selectedSubjects, setSelectedSubjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -115,6 +114,12 @@ setFacultyMap(subjectFacultyMap)
     }
   }
 
+  const toggleSubject = (code) => {
+    setSelectedSubjects(prev =>
+      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    )
+  }
+
   const handleProofChange = (e) => {
     setError('')
     const file = e.target.files?.[0] || null
@@ -145,8 +150,9 @@ setFacultyMap(subjectFacultyMap)
   }
 
   const validateForm = () => {
-    if (!formData.subject_code) return 'Please select a subject.'
-    if (!formData.faculty_id) return 'No faculty assigned to this subject yet.'
+    if (selectedSubjects.length === 0) return 'Please select at least one subject.'
+    if (selectedSubjects.some(code => !facultyMap[code]?.faculty_id))
+      return 'One or more selected subjects have no faculty assigned.'
     if (!formData.description.trim()) return 'Please add a description.'
     if (!formData.start_date || !formData.end_date) return 'Please select both dates.'
     if (formData.end_date < formData.start_date) return 'End date cannot be before start date.'
@@ -162,10 +168,10 @@ setFacultyMap(subjectFacultyMap)
     setSubmitting(true)
     try {
       const proofUrl = await uploadProof(formData.proof)
-      const { error: insertError } = await supabase.from('requests').insert({
+      const inserts = selectedSubjects.map(code => ({
         student_id: student.id,
-        faculty_id: formData.faculty_id,
-        subject_code: formData.subject_code,
+        faculty_id: facultyMap[code].faculty_id,
+        subject_code: code,
         dept: student.dept,
         category: formData.category,
         description: formData.description.trim(),
@@ -173,11 +179,15 @@ setFacultyMap(subjectFacultyMap)
         end_date: formData.end_date,
         proof_url: proofUrl,
         status: 'Pending',
-      })
+      }))
+      const { error: insertError } = await supabase
+        .from('requests')
+        .insert(inserts)
       if (insertError) throw insertError
       setFormData(initialForm)
+      setSelectedSubjects([])
       e.target.reset()
-      setSuccess('Request submitted successfully.')
+      setSuccess(`${inserts.length} request${inserts.length > 1 ? 's' : ''} submitted successfully.`)
       await fetchRequests(student.id)
     } catch (err) {
       setError(err.message || 'Unable to submit request.')
@@ -194,35 +204,35 @@ setFacultyMap(subjectFacultyMap)
   }
 
   const statusClass = (status) => ({
-    Pending: 'bg-yellow-100 text-yellow-800 ring-1 ring-yellow-200',
-    Approved: 'bg-green-100 text-green-800 ring-1 ring-green-200',
-    Rejected: 'bg-red-100 text-red-800 ring-1 ring-red-200',
-  }[status] || 'bg-gray-100 text-gray-700')
+    Pending: 'status-pending',
+    Approved: 'status-approved',
+    Rejected: 'status-rejected',
+  }[status] || 'status-neutral')
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="rounded-lg bg-white px-6 py-4 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200">
+    <div className="app-shell flex items-center justify-center">
+      <div className="loading-card">
         Loading dashboard...
       </div>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="app-shell">
+      <div className="page-frame">
 
-        <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <header className="dashboard-header dashboard-header-inner">
           <div>
-            <p className="text-sm font-medium text-blue-600">Student Dashboard</p>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <p className="eyebrow">Student Dashboard</p>
+            <h1 className="page-title">
               Welcome{student?.name ? `, ${student.name}` : ''}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              {student?.dept} — Semester {student?.semester}
+            <p className="muted-copy">
+              {student?.dept} - Semester {student?.semester}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="metric-pill">
               {requests.length} request{requests.length === 1 ? '' : 's'} submitted
             </div>
             <button
@@ -230,7 +240,7 @@ setFacultyMap(subjectFacultyMap)
                 await supabase.auth.signOut()
                 navigate('/login')
               }}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 hover:bg-slate-50"
+              className="btn-secondary"
             >
               Sign out
             </button>
@@ -238,98 +248,96 @@ setFacultyMap(subjectFacultyMap)
         </header>
 
         {(error || success) && (
-          <div className={`rounded-lg border px-4 py-3 text-sm ${
-            error ? 'border-red-200 bg-red-50 text-red-700' : 'border-green-200 bg-green-50 text-green-700'
+          <div className={`alert ${
+            error ? 'alert-error' : 'alert-success'
           }`}>
             {error || success}
           </div>
         )}
 
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-5">
-            <h2 className="text-lg font-semibold text-slate-900">New attendance request</h2>
-            <p className="mt-1 text-sm text-slate-500">Submit co-curricular, medical, or sports consideration details.</p>
+        <section className="surface-card">
+          <div className="section-heading">
+            <h2 className="section-title">New attendance request</h2>
+            <p className="section-subtitle">Submit co-curricular, medical, or sports consideration details.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-2">
-            <label className="block lg:col-span-2">
-              <span className="text-sm font-medium text-slate-700">Subject</span>
-              <select
-                name="subject_code"
-                value={formData.subject_code}
-                onChange={handleChange}
-                required
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="">Select subject</option>
-                {subjects.map(s => (
-                  <option key={s.subject_code} value={s.subject_code}>
-                    {s.subject_code} — {s.subject_name}
-                    {facultyMap[s.subject_code]
-                      ? ` (${facultyMap[s.subject_code].faculty_name})`
-                      : ' (no faculty assigned)'}
-                  </option>
-                ))}
-              </select>
-              {formData.subject_code && facultyMap[formData.subject_code] && (
-                <p className="mt-1 text-xs text-slate-500">
-                  Request will be sent to <span className="font-medium text-slate-700">
-                    {facultyMap[formData.subject_code].faculty_name}
-                  </span>
-                </p>
-              )}
-            </label>
+          <form onSubmit={handleSubmit} className="grid gap-5 p-5 sm:p-6 lg:grid-cols-2">
+            <div className="block lg:col-span-2">
+              <span className="text-sm font-medium text-slate-700">Subjects</span>
+              <p className="text-xs text-slate-500 mb-2">Select all subjects you were absent for</p>
+              <div className="border border-slate-300 rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
+                {subjects.map(s => {
+                  const assigned = facultyMap[s.subject_code]
+                  return (
+                    <label key={s.subject_code} className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedSubjects.includes(s.subject_code)}
+                        onChange={() => toggleSubject(s.subject_code)}
+                        className="accent-blue-600"
+                      />
+                      <span className="text-sm text-slate-700">
+                        {s.subject_code} — {s.subject_name}
+                        {assigned
+                          ? <span className="text-slate-400 ml-1">({assigned.faculty_name})</span>
+                          : <span className="text-red-400 ml-1">(no faculty assigned)</span>}
+                      </span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Category</span>
+              <span className="field-label">Category</span>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="field-input"
               >
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Proof file</span>
+              <span className="field-label">Proof file</span>
               <input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleProofChange}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 focus:outline-none"
+                className="file-input"
               />
-              <span className="mt-1 block text-xs text-slate-500">Optional. PDF, JPG, JPEG, or PNG up to 5 MB.</span>
+              <span className="helper-text">Optional. PDF, JPG, JPEG, or PNG up to 5 MB.</span>
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Start date</span>
+              <span className="field-label">Start date</span>
               <input
                 name="start_date"
                 type="date"
                 value={formData.start_date}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="field-input"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">End date</span>
+              <span className="field-label">End date</span>
               <input
                 name="end_date"
                 type="date"
                 value={formData.end_date}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="field-input"
               />
             </label>
 
             <label className="block lg:col-span-2">
-              <span className="text-sm font-medium text-slate-700">Description</span>
+              <span className="field-label">Description</span>
               <textarea
                 name="description"
                 value={formData.description}
@@ -337,7 +345,7 @@ setFacultyMap(subjectFacultyMap)
                 required
                 rows="4"
                 placeholder="Describe the event, reason, or activity for this request."
-                className="mt-1 w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                className="field-input min-h-28 resize-none"
               />
             </label>
 
@@ -345,7 +353,7 @@ setFacultyMap(subjectFacultyMap)
               <button
                 type="submit"
                 disabled={submitting}
-                className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                className="btn-primary w-full sm:w-auto"
               >
                 {submitting ? 'Submitting...' : 'Submit request'}
               </button>
@@ -353,42 +361,44 @@ setFacultyMap(subjectFacultyMap)
           </form>
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="text-lg font-semibold text-slate-900">My requests</h2>
+        <section className="surface-card">
+          <div className="section-heading">
+            <h2 className="section-title">My requests</h2>
+            <p className="section-subtitle">Track every submitted request and faculty remark.</p>
           </div>
           {requests.length === 0 ? (
-            <div className="px-5 py-12 text-center">
-              <p className="text-sm text-slate-500">No requests yet. Submit one above.</p>
+            <div className="empty-state">
+              <h3 className="text-base font-semibold text-slate-950">No requests yet</h3>
+              <p className="mt-1 text-sm text-slate-500">Submit one above and it will appear here.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <table className="data-table">
+                <thead>
                   <tr>
-                    <th className="px-5 py-3 text-left">Subject</th>
-                    <th className="px-5 py-3 text-left">Faculty</th>
-                    <th className="px-5 py-3 text-left">Category</th>
-                    <th className="px-5 py-3 text-left">Dates</th>
-                    <th className="px-5 py-3 text-left">Status</th>
-                    <th className="px-5 py-3 text-left">Remark</th>
+                    <th>Subject</th>
+                    <th>Faculty</th>
+                    <th>Category</th>
+                    <th>Dates</th>
+                    <th>Status</th>
+                    <th>Remark</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody>
                   {requests.map(req => (
                     <tr key={req.request_id}>
-                      <td className="px-5 py-4 font-medium text-slate-900">{req.subject_code}</td>
-                      <td className="px-5 py-4 text-slate-600">
-                        {facultyMap[req.subject_code]?.faculty_name || '—'}
+                      <td className="font-semibold text-slate-950">{req.subject_code}</td>
+                      <td className="text-slate-600">
+                        {facultyMap[req.subject_code]?.faculty_name || '-'}
                       </td>
-                      <td className="px-5 py-4 text-slate-600">{req.category}</td>
-                      <td className="px-5 py-4 text-slate-600">{formatDateRange(req.start_date, req.end_date)}</td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(req.status)}`}>
+                      <td className="text-slate-600">{req.category}</td>
+                      <td className="text-slate-600">{formatDateRange(req.start_date, req.end_date)}</td>
+                      <td>
+                        <span className={`status-pill ${statusClass(req.status)}`}>
                           {req.status}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-600">
+                      <td className="max-w-xs text-slate-600">
                         {req.faculty_remark || <span className="text-slate-400">No remark</span>}
                       </td>
                     </tr>

@@ -171,13 +171,13 @@ function FacultyDashboard() {
   }
 
   return (
-    <div className="portal-shell">
-      <aside className="portal-sidebar">
+    <div className="portal-shell flex flex-col lg:flex-row">
+      <aside className="portal-sidebar w-full lg:w-64 flex-shrink-0 px-4 py-4 lg:py-6 lg:px-6">
         <div className="flex items-center gap-3">
           <span className="brand-mark">AF</span>
           <div>
             <p className="font-bold text-slate-950">AttendFlow</p>
-            <p className="text-xs text-slate-500">Faculty portal</p>
+            <p className="text-sm text-slate-500">Faculty portal</p>
           </div>
         </div>
 
@@ -201,15 +201,15 @@ function FacultyDashboard() {
             await supabase.auth.signOut()
             navigate('/login')
           }}
-          className="btn-secondary mt-5 w-full lg:mt-8"
+          className="btn-secondary mt-5 min-h-11 w-full lg:mt-8"
         >
           <LogOut className="h-4 w-4" />
           Logout
         </button>
       </aside>
 
-      <main className="portal-main">
-        <div className="portal-content">
+      <main className="portal-main flex-1">
+        <div className="portal-content w-full px-4 sm:px-6 lg:px-8 py-6">
           <header id="dashboard" className="portal-topbar">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -224,7 +224,7 @@ function FacultyDashboard() {
                   await supabase.auth.signOut()
                   navigate('/login')
                 }}
-                className="btn-secondary"
+                className="btn-secondary min-h-11 w-full sm:w-auto"
               >
                 <LogOut className="h-4 w-4" />
                 Sign out
@@ -295,7 +295,7 @@ function FacultyDashboard() {
               </div>
             ) : (
               <div id="all-requests" className="overflow-x-auto">
-                <table className="data-table">
+                <table className="data-table min-w-full sm:min-w-[980px]">
                   <thead>
                     <tr>
                       <th>Student</th>
@@ -354,12 +354,12 @@ function FacultyDashboard() {
                           </td>
                           <td>
                             {isPending ? (
-                              <div className="min-w-64 space-y-3">
-                                <div className="flex gap-2">
+                              <div className="min-w-0 space-y-3 sm:min-w-64">
+                                <div className="flex flex-col gap-2 sm:flex-row">
                                   <button
                                     type="button"
                                     onClick={() => openDecision(request.request_id, 'Approved')}
-                                    className="btn-success"
+                                    className="btn-success min-h-11 w-full sm:w-auto text-sm"
                                   >
                                     <CheckCircle2 className="h-3.5 w-3.5" />
                                     Approve
@@ -367,7 +367,7 @@ function FacultyDashboard() {
                                   <button
                                     type="button"
                                     onClick={() => openDecision(request.request_id, 'Rejected')}
-                                    className="btn-danger"
+                                    className="btn-danger min-h-11 w-full sm:w-auto text-sm"
                                   >
                                     <XCircle className="h-3.5 w-3.5" />
                                     Reject
@@ -385,15 +385,15 @@ function FacultyDashboard() {
                                         value={activeDecision.remark}
                                         onChange={handleRemarkChange}
                                         placeholder="Add a remark"
-                                        className="field-input mt-1 text-xs"
+                                        className="field-input mt-1 min-h-11 w-full text-base"
                                       />
                                     </label>
-                                    <div className="mt-3 flex gap-2">
+                                    <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                                       <button
                                         type="button"
                                         onClick={confirmDecision}
                                         disabled={updating}
-                                        className="btn-primary min-h-0 px-3 py-1.5 text-xs"
+                                        className="btn-primary min-h-11 w-full px-3 py-1.5 text-sm sm:w-auto"
                                       >
                                         <ClipboardCheck className="h-3.5 w-3.5" />
                                         {updating ? 'Saving...' : 'Confirm'}
@@ -402,7 +402,7 @@ function FacultyDashboard() {
                                         type="button"
                                         onClick={() => setActiveDecision(null)}
                                         disabled={updating}
-                                        className="btn-secondary min-h-0 px-3 py-1.5 text-xs"
+                                        className="btn-secondary min-h-11 w-full px-3 py-1.5 text-sm sm:w-auto"
                                       >
                                         Cancel
                                       </button>

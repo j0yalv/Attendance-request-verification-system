@@ -233,13 +233,13 @@ setFacultyMap(subjectFacultyMap)
   )
 
   return (
-    <div className="portal-shell">
-      <aside className="portal-sidebar">
+    <div className="portal-shell flex flex-col lg:flex-row">
+      <aside className="portal-sidebar w-full lg:w-64 flex-shrink-0 px-4 py-4 lg:py-6 lg:px-6">
         <div className="flex items-center gap-3">
           <span className="brand-mark">AF</span>
           <div>
             <p className="font-bold text-slate-950">AttendFlow</p>
-            <p className="text-xs text-slate-500">Student portal</p>
+            <p className="text-sm text-slate-500">Student portal</p>
           </div>
         </div>
 
@@ -263,15 +263,15 @@ setFacultyMap(subjectFacultyMap)
             await supabase.auth.signOut()
             navigate('/login')
           }}
-          className="btn-secondary mt-5 w-full lg:mt-8"
+          className="btn-secondary mt-5 min-h-11 w-full lg:mt-8"
         >
           <LogOut className="h-4 w-4" />
           Logout
         </button>
       </aside>
 
-      <main className="portal-main">
-        <div className="portal-content">
+      <main className="portal-main flex-1">
+        <div className="portal-content w-full px-4 sm:px-6 lg:px-8 py-6">
           <header id="dashboard" className="portal-topbar">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -288,7 +288,7 @@ setFacultyMap(subjectFacultyMap)
                   await supabase.auth.signOut()
                   navigate('/login')
                 }}
-                className="btn-secondary"
+                className="btn-secondary min-h-11 w-full sm:w-auto"
               >
                 <LogOut className="h-4 w-4" />
                 Sign out
@@ -348,22 +348,22 @@ setFacultyMap(subjectFacultyMap)
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid gap-5 p-5 sm:p-6 lg:grid-cols-2">
+            <form onSubmit={handleSubmit} className="grid gap-5 p-4 sm:p-6 lg:grid-cols-2">
               <div className="block lg:col-span-2">
                 <span className="field-label">Subjects</span>
-                <p className="helper-text mb-2">Select all subjects you were absent for</p>
-                <div className="subject-picker">
+                <p className="helper-text mb-2 text-sm">Select all subjects you were absent for</p>
+                <div className="subject-picker space-y-2 max-h-56 overflow-y-auto">
                   {subjects.map(s => {
                     const assigned = facultyMap[s.subject_code]
                     return (
-                      <label key={s.subject_code} className="subject-option">
+                      <label key={s.subject_code} className="subject-option flex items-start gap-3 rounded-md p-2 transition hover:bg-white min-h-11">
                         <input
                           type="checkbox"
                           checked={selectedSubjects.includes(s.subject_code)}
                           onChange={() => toggleSubject(s.subject_code)}
-                          className="mt-1 accent-blue-600"
+                          className="mt-1 min-h-5 min-w-5 accent-blue-600"
                         />
-                        <span className="text-sm leading-5 text-slate-700">
+                        <span className="min-w-0 text-sm leading-5 text-slate-700">
                           <span className="font-semibold text-slate-900">{s.subject_code}</span> - {s.subject_name}
                           {assigned
                             ? <span className="ml-1 text-slate-400">({assigned.faculty_name})</span>
@@ -382,7 +382,7 @@ setFacultyMap(subjectFacultyMap)
                   value={formData.category}
                   onChange={handleChange}
                   required
-                  className="field-input"
+                  className="field-input min-h-11 w-full text-base"
                 >
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -394,9 +394,9 @@ setFacultyMap(subjectFacultyMap)
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   onChange={handleProofChange}
-                  className="file-input"
+                  className="file-input min-h-11 w-full"
                 />
-                <span className="helper-text">Optional. PDF, JPG, JPEG, or PNG up to 5 MB.</span>
+                <span className="helper-text text-sm">Optional. PDF, JPG, JPEG, or PNG up to 5 MB.</span>
               </label>
 
               <label className="block">
@@ -407,7 +407,7 @@ setFacultyMap(subjectFacultyMap)
                   value={formData.start_date}
                   onChange={handleChange}
                   required
-                  className="field-input"
+                  className="field-input min-h-11 w-full text-base"
                 />
               </label>
 
@@ -419,7 +419,7 @@ setFacultyMap(subjectFacultyMap)
                   value={formData.end_date}
                   onChange={handleChange}
                   required
-                  className="field-input"
+                  className="field-input min-h-11 w-full text-base"
                 />
               </label>
 
@@ -432,7 +432,7 @@ setFacultyMap(subjectFacultyMap)
                   required
                   rows="4"
                   placeholder="Describe the event, reason, or activity for this request."
-                  className="field-input min-h-28 resize-none"
+                  className="field-input min-h-28 resize-none w-full text-base"
                 />
               </label>
 
@@ -440,7 +440,7 @@ setFacultyMap(subjectFacultyMap)
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn-primary w-full sm:w-auto"
+                  className="btn-primary min-h-11 w-full sm:w-auto text-base"
                 >
                   <FileUp className="h-4 w-4" />
                   {submitting ? 'Submitting...' : 'Submit request'}
@@ -468,7 +468,7 @@ setFacultyMap(subjectFacultyMap)
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="data-table">
+                <table className="data-table min-w-full sm:min-w-[760px]">
                   <thead>
                     <tr>
                       <th>Subject</th>

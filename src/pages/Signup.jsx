@@ -133,29 +133,29 @@ function Signup() {
   }
 
   return (
-    <div className="auth-shell">
-      <div className="auth-panel">
-        <div className="auth-card">
+    <div className="auth-shell min-h-screen flex items-center justify-center px-4 sm:px-8">
+      <div className="auth-panel w-full max-w-md sm:max-w-lg">
+        <div className="auth-card w-full p-6 sm:p-8">
           <div className="flex items-center gap-3">
             <span className="brand-mark">AF</span>
             <div>
               <p className="auth-brand">AttendFlow</p>
-              <p className="text-xs text-slate-500">Academic account setup</p>
+              <p className="text-sm text-slate-500">Academic account setup</p>
             </div>
           </div>
           <h1 className="auth-title">Create account</h1>
           <p className="auth-copy mb-6">Use your @pace.edu.in email</p>
 
-          <div className="mb-6 grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-100 p-1">
+          <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 rounded-xl border border-slate-200 bg-slate-100 p-1">
             <button
-              className={`rounded-lg py-2 text-sm font-semibold transition ${role === 'student' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`min-h-11 rounded-lg py-2 text-sm font-semibold transition ${role === 'student' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
               onClick={() => setRole('student')}
               type="button"
             >
               Student
             </button>
             <button
-              className={`rounded-lg py-2 text-sm font-semibold transition ${role === 'faculty' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`min-h-11 rounded-lg py-2 text-sm font-semibold transition ${role === 'faculty' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
               onClick={() => setRole('faculty')}
               type="button"
             >
@@ -171,7 +171,7 @@ function Signup() {
               value={formData.name}
               onChange={handleChange}
               required
-              className="field-input"
+              className="field-input min-h-11 w-full text-base"
             />
             <input
               name="email"
@@ -180,7 +180,7 @@ function Signup() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="field-input"
+              className="field-input min-h-11 w-full text-base"
             />
             <input
               name="password"
@@ -189,7 +189,7 @@ function Signup() {
               value={formData.password}
               onChange={handleChange}
               required
-              className="field-input"
+              className="field-input min-h-11 w-full text-base"
             />
             <input
               name="dept"
@@ -198,7 +198,7 @@ function Signup() {
               value={formData.dept}
               onChange={handleChange}
               required
-              className="field-input"
+              className="field-input min-h-11 w-full text-base"
             />
 
           {role === 'student' && (
@@ -210,7 +210,7 @@ function Signup() {
                 value={formData.usn}
                 onChange={handleChange}
                 required
-                className="field-input"
+                className="field-input min-h-11"
               />
               <input
                 name="semester"
@@ -221,7 +221,7 @@ function Signup() {
                 required
                 min="1"
                 max="8"
-                className="field-input"
+                className="field-input min-h-11"
               />
             </>
           )}
@@ -238,7 +238,7 @@ function Signup() {
                       type="checkbox"
                       checked={selectedSubjects.includes(s.subject_code)}
                       onChange={() => toggleSubject(s.subject_code)}
-                      className="mt-1 accent-blue-600"
+                            className="mt-1 min-h-5 min-w-5 accent-blue-600"
                     />
                     <span className="text-sm leading-5 text-slate-700">
                       {s.subject_code} - {s.subject_name}
@@ -261,7 +261,7 @@ function Signup() {
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full"
+              className="btn-primary min-h-11 w-full text-base"
           >
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>

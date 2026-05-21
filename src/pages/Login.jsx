@@ -55,14 +55,14 @@ function Login() {
   }
 
   return (
-    <div className="auth-shell">
-      <div className="auth-panel">
-        <div className="auth-card">
+    <div className="auth-shell min-h-screen flex items-center justify-center px-4 sm:px-8">
+      <div className="auth-panel w-full max-w-md sm:max-w-lg">
+        <div className="auth-card w-full p-6 sm:p-8">
           <div className="flex items-center gap-3">
             <span className="brand-mark">AF</span>
             <div>
               <p className="auth-brand">AttendFlow</p>
-              <p className="text-xs text-slate-500">Academic access portal</p>
+              <p className="text-sm text-slate-500">Academic access portal</p>
             </div>
           </div>
           <h1 className="auth-title">Welcome back</h1>
@@ -75,7 +75,7 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="field-input"
+              className="field-input min-h-11 w-full text-base"
             />
             <input
               type="password"
@@ -83,7 +83,7 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="field-input"
+              className="field-input min-h-11 w-full text-base"
             />
 
             {error && <p className="alert alert-error">{error}</p>}
@@ -91,7 +91,7 @@ function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full"
+              className="btn-primary min-h-11 w-full text-base"
             >
               {loading ? 'Signing in...' : 'Log In'}
             </button>

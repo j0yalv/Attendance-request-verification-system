@@ -4,7 +4,9 @@ import { supabase } from '../supabaseClient'
 
 function Signup() {
   const navigate = useNavigate()
+
   const [role, setRole] = useState('student')
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,43 +15,69 @@ function Signup() {
     semester: '',
     usn: '',
   })
+
   const [subjects, setSubjects] = useState([])
   const [selectedSubjects, setSelectedSubjects] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+
+    setFormData({
+      ...formData,
+      [name]:
+        name === 'dept'
+          ? value.toUpperCase()
+          : value,
+    })
   }
 
   useEffect(() => {
-    if (role === 'faculty' && formData.dept.trim()) {
+    if (
+      role === 'faculty' &&
+      formData.dept.trim().length >= 4
+    ) {
       const fetchSubjects = async () => {
-        const { data } = await supabase
+        const normalizedDept = formData.dept
+          .trim()
+          .toUpperCase()
+
+        console.log('Fetching subjects for:', normalizedDept)
+
+        const { data, error } = await supabase
           .from('subjects')
           .select('subject_code, subject_name, semester')
-          .eq('dept', formData.dept.trim())
+          .eq('dept', normalizedDept)
           .order('semester')
+
+        console.log('Subjects response:', data)
+
+        if (error) {
+          console.error(error)
+        }
+
         setSubjects(data || [])
       }
+
       fetchSubjects()
     } else {
-      const resetSubjects = async () => {
-        setSubjects([])
-        setSelectedSubjects([])
-      }
-      resetSubjects()
+      setSubjects([])
+      setSelectedSubjects([])
     }
   }, [role, formData.dept])
 
   const toggleSubject = (code) => {
     setSelectedSubjects(prev =>
-      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+      prev.includes(code)
+        ? prev.filter(c => c !== code)
+        : [...prev, code]
     )
   }
 
   const handleSignup = async (e) => {
     e.preventDefault()
+
     setError('')
 
     if (!formData.email.endsWith('@pace.edu.in')) {
@@ -69,10 +97,15 @@ function Signup() {
 
     setLoading(true)
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-    })
+    const normalizedDept = formData.dept
+      .trim()
+      .toUpperCase()
+
+    const { data: authData, error: authError } =
+      await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      })
 
     if (authError) {
       setError(authError.message)
@@ -83,27 +116,34 @@ function Signup() {
     const userId = authData.user.id
 
     if (role === 'student') {
-      const { error: profileError } = await supabase.from('students').insert({
-        id: userId,
-        name: formData.name,
-        email: formData.email,
-        dept: formData.dept,
-        semester: parseInt(formData.semester),
-        usn: formData.usn,
-      })
+      const { error: profileError } = await supabase
+        .from('students')
+        .insert({
+          id: userId,
+          name: formData.name,
+          email: formData.email,
+          dept: normalizedDept,
+          semester: parseInt(formData.semester),
+          usn: formData.usn,
+        })
+
       if (profileError) {
         setError(profileError.message)
         setLoading(false)
         return
       }
+
       navigate('/student/dashboard')
     } else {
-      const { error: profileError } = await supabase.from('faculty').insert({
-        id: userId,
-        name: formData.name,
-        email: formData.email,
-        dept: formData.dept,
-      })
+      const { error: profileError } = await supabase
+        .from('faculty')
+        .insert({
+          id: userId,
+          name: formData.name,
+          email: formData.email,
+          dept: normalizedDept,
+        })
+
       if (profileError) {
         setError(profileError.message)
         setLoading(false)
@@ -113,7 +153,7 @@ function Signup() {
       const subjectRows = selectedSubjects.map(code => ({
         faculty_id: userId,
         subject_code: code,
-        dept: formData.dept,
+        dept: normalizedDept,
       }))
 
       const { error: subjectError } = await supabase
@@ -138,24 +178,43 @@ function Signup() {
         <div className="auth-card w-full p-6 sm:p-8">
           <div className="flex items-center gap-3">
             <span className="brand-mark">AF</span>
+
             <div>
               <p className="auth-brand">AttendFlow</p>
-              <p className="text-sm text-slate-500">Academic account setup</p>
+
+              <p className="text-sm text-slate-500">
+                Academic account setup
+              </p>
             </div>
           </div>
-          <h1 className="auth-title">Create account</h1>
-          <p className="auth-copy mb-6">Use your @pace.edu.in email</p>
+
+          <h1 className="auth-title">
+            Create account
+          </h1>
+
+          <p className="auth-copy mb-6">
+            Use your @pace.edu.in email
+          </p>
 
           <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 rounded-xl border border-slate-200 bg-slate-100 p-1">
             <button
-              className={`min-h-11 rounded-lg py-2 text-sm font-semibold transition ${role === 'student' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`min-h-11 rounded-lg py-2 text-sm font-semibold transition ${
+                role === 'student'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
               onClick={() => setRole('student')}
               type="button"
             >
               Student
             </button>
+
             <button
-              className={`min-h-11 rounded-lg py-2 text-sm font-semibold transition ${role === 'faculty' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              className={`min-h-11 rounded-lg py-2 text-sm font-semibold transition ${
+                role === 'faculty'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
               onClick={() => setRole('faculty')}
               type="button"
             >
@@ -173,6 +232,7 @@ function Signup() {
               required
               className="field-input min-h-11 w-full text-base"
             />
+
             <input
               name="email"
               type="email"
@@ -182,6 +242,7 @@ function Signup() {
               required
               className="field-input min-h-11 w-full text-base"
             />
+
             <input
               name="password"
               type="password"
@@ -191,6 +252,7 @@ function Signup() {
               required
               className="field-input min-h-11 w-full text-base"
             />
+
             <input
               name="dept"
               type="text"
@@ -201,75 +263,97 @@ function Signup() {
               className="field-input min-h-11 w-full text-base"
             />
 
-          {role === 'student' && (
-            <>
-              <input
-                name="usn"
-                type="text"
-                placeholder="USN"
-                value={formData.usn}
-                onChange={handleChange}
-                required
-                className="field-input min-h-11"
-              />
-              <input
-                name="semester"
-                type="number"
-                placeholder="Semester (e.g. 4)"
-                value={formData.semester}
-                onChange={handleChange}
-                required
-                min="1"
-                max="8"
-                className="field-input min-h-11"
-              />
-            </>
-          )}
+            {role === 'student' && (
+              <>
+                <input
+                  name="usn"
+                  type="text"
+                  placeholder="USN"
+                  value={formData.usn}
+                  onChange={handleChange}
+                  required
+                  className="field-input min-h-11"
+                />
 
-          {role === 'faculty' && subjects.length > 0 && (
-            <div>
-              <p className="field-label mb-2">
-                Select subjects you teach
-              </p>
-              <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-3">
-                {subjects.map(s => (
-                  <label key={s.subject_code} className="flex cursor-pointer items-start gap-3 rounded-md p-2 transition hover:bg-white">
-                    <input
-                      type="checkbox"
-                      checked={selectedSubjects.includes(s.subject_code)}
-                      onChange={() => toggleSubject(s.subject_code)}
-                            className="mt-1 min-h-5 min-w-5 accent-blue-600"
-                    />
-                    <span className="text-sm leading-5 text-slate-700">
-                      {s.subject_code} - {s.subject_name}
-                      <span className="ml-1 text-slate-400">(Sem {s.semester})</span>
-                    </span>
-                  </label>
-                ))}
+                <input
+                  name="semester"
+                  type="number"
+                  placeholder="Semester (e.g. 4)"
+                  value={formData.semester}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  max="8"
+                  className="field-input min-h-11"
+                />
+              </>
+            )}
+
+            {role === 'faculty' && subjects.length > 0 && (
+              <div>
+                <p className="field-label mb-2">
+                  Select subjects you teach
+                </p>
+
+                <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  {subjects.map(s => (
+                    <label
+                      key={s.subject_code}
+                      className="flex cursor-pointer items-start gap-3 rounded-md p-2 transition hover:bg-white"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedSubjects.includes(s.subject_code)}
+                        onChange={() => toggleSubject(s.subject_code)}
+                        className="mt-1 min-h-5 min-w-5 accent-blue-600"
+                      />
+
+                      <span className="text-sm leading-5 text-slate-700">
+                        {s.subject_code} - {s.subject_name}
+
+                        <span className="ml-1 text-slate-400">
+                          (Sem {s.semester})
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {role === 'faculty' && formData.dept && subjects.length === 0 && (
-            <p className="helper-text">
-              No subjects found for {formData.dept}
-            </p>
-          )}
+            {role === 'faculty' &&
+              formData.dept &&
+              subjects.length === 0 && (
+                <p className="helper-text">
+                  No subjects found for {formData.dept}
+                </p>
+              )}
 
-          {error && <p className="alert alert-error">{error}</p>}
+            {error && (
+              <p className="alert alert-error">
+                {error}
+              </p>
+            )}
 
-          <button
-            type="submit"
-            disabled={loading}
+            <button
+              type="submit"
+              disabled={loading}
               className="btn-primary min-h-11 w-full text-base"
-          >
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
-        </form>
+            >
+              {loading
+                ? 'Creating account...'
+                : 'Sign Up'}
+            </button>
+          </form>
 
           <p className="mt-5 text-center text-sm text-slate-500">
             Already have an account?{' '}
-            <Link to="/login" className="font-semibold text-indigo-700 hover:underline">Log in</Link>
+            <Link
+              to="/login"
+              className="font-semibold text-indigo-700 hover:underline"
+            >
+              Log in
+            </Link>
           </p>
         </div>
       </div>

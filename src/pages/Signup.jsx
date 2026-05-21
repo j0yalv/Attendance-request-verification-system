@@ -34,8 +34,11 @@ function Signup() {
       }
       fetchSubjects()
     } else {
-      setSubjects([])
-      setSelectedSubjects([])
+      const resetSubjects = async () => {
+        setSubjects([])
+        setSelectedSubjects([])
+      }
+      resetSubjects()
     }
   }, [role, formData.dept])
 
@@ -132,65 +135,71 @@ function Signup() {
   return (
     <div className="auth-shell">
       <div className="auth-panel">
-      <div className="auth-card">
-        <p className="auth-brand">AttendFlow</p>
-        <h1 className="auth-title">Create account</h1>
-        <p className="auth-copy mb-6">Use your @pace.edu.in email</p>
+        <div className="auth-card">
+          <div className="flex items-center gap-3">
+            <span className="brand-mark">AF</span>
+            <div>
+              <p className="auth-brand">AttendFlow</p>
+              <p className="text-xs text-slate-500">Academic account setup</p>
+            </div>
+          </div>
+          <h1 className="auth-title">Create account</h1>
+          <p className="auth-copy mb-6">Use your @pace.edu.in email</p>
 
-        <div className="mb-6 grid grid-cols-2 rounded-lg border border-slate-200 bg-slate-100 p-1">
-          <button
-            className={`rounded-md py-2 text-sm font-semibold transition ${role === 'student' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-            onClick={() => setRole('student')}
-            type="button"
-          >
-            Student
-          </button>
-          <button
-            className={`rounded-md py-2 text-sm font-semibold transition ${role === 'faculty' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-            onClick={() => setRole('faculty')}
-            type="button"
-          >
-            Faculty
-          </button>
-        </div>
+          <div className="mb-6 grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-100 p-1">
+            <button
+              className={`rounded-lg py-2 text-sm font-semibold transition ${role === 'student' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              onClick={() => setRole('student')}
+              type="button"
+            >
+              Student
+            </button>
+            <button
+              className={`rounded-lg py-2 text-sm font-semibold transition ${role === 'faculty' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              onClick={() => setRole('faculty')}
+              type="button"
+            >
+              Faculty
+            </button>
+          </div>
 
-        <form onSubmit={handleSignup} className="space-y-4">
-          <input
-            name="name"
-            type="text"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="field-input"
-          />
-          <input
-            name="email"
-            type="email"
-            placeholder="College Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="field-input"
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="field-input"
-          />
-          <input
-            name="dept"
-            type="text"
-            placeholder="Department (e.g. AIML)"
-            value={formData.dept}
-            onChange={handleChange}
-            required
-            className="field-input"
-          />
+          <form onSubmit={handleSignup} className="space-y-4">
+            <input
+              name="name"
+              type="text"
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="field-input"
+            />
+            <input
+              name="email"
+              type="email"
+              placeholder="College Email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="field-input"
+            />
+            <input
+              name="password"
+              type="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="field-input"
+            />
+            <input
+              name="dept"
+              type="text"
+              placeholder="Department (e.g. AIML)"
+              value={formData.dept}
+              onChange={handleChange}
+              required
+              className="field-input"
+            />
 
           {role === 'student' && (
             <>
@@ -258,11 +267,11 @@ function Signup() {
           </button>
         </form>
 
-        <p className="mt-5 text-center text-sm text-slate-500">
-          Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-blue-700 hover:underline">Log in</Link>
-        </p>
-      </div>
+          <p className="mt-5 text-center text-sm text-slate-500">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold text-indigo-700 hover:underline">Log in</Link>
+          </p>
+        </div>
       </div>
     </div>
   )

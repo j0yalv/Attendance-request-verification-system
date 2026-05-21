@@ -57,45 +57,51 @@ function Login() {
   return (
     <div className="auth-shell">
       <div className="auth-panel">
-      <div className="auth-card">
-        <p className="auth-brand">AttendFlow</p>
-        <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-copy mb-6">Sign in with your @pace.edu.in email</p>
+        <div className="auth-card">
+          <div className="flex items-center gap-3">
+            <span className="brand-mark">AF</span>
+            <div>
+              <p className="auth-brand">AttendFlow</p>
+              <p className="text-xs text-slate-500">Academic access portal</p>
+            </div>
+          </div>
+          <h1 className="auth-title">Welcome back</h1>
+          <p className="auth-copy mb-6">Sign in with your @pace.edu.in email</p>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="College Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="field-input"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="field-input"
-          />
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="email"
+              placeholder="College Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="field-input"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="field-input"
+            />
 
-          {error && <p className="alert alert-error">{error}</p>}
+            {error && <p className="alert alert-error">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? 'Signing in...' : 'Log In'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full"
+            >
+              {loading ? 'Signing in...' : 'Log In'}
+            </button>
+          </form>
 
-        <p className="mt-5 text-center text-sm text-slate-500">
-          Don't have an account?{' '}
-          <Link to="/signup" className="font-semibold text-blue-700 hover:underline">Sign up</Link>
-        </p>
-      </div>
+          <p className="mt-5 text-center text-sm text-slate-500">
+            Don't have an account?{' '}
+            <Link to="/signup" className="font-semibold text-indigo-700 hover:underline">Sign up</Link>
+          </p>
+        </div>
       </div>
     </div>
   )

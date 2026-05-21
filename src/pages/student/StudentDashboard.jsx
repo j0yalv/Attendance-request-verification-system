@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabaseClient'
 import { useNavigate } from 'react-router-dom'
+import {
+  BookOpen,
+  CheckCircle2,
+  ClipboardList,
+  Clock3,
+  FileUp,
+  Home,
+  LogOut,
+  PlusCircle,
+  XCircle,
+} from 'lucide-react'
 
 const CATEGORIES = ['Hackathon', 'Workshop', 'Volunteering', 'Medical', 'Sports', 'Other']
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -209,6 +220,10 @@ setFacultyMap(subjectFacultyMap)
     Rejected: 'status-rejected',
   }[status] || 'status-neutral')
 
+  const pendingCount = requests.filter(req => req.status === 'Pending').length
+  const approvedCount = requests.filter(req => req.status === 'Approved').length
+  const rejectedCount = requests.filter(req => req.status === 'Rejected').length
+
   if (loading) return (
     <div className="app-shell flex items-center justify-center">
       <div className="loading-card">
@@ -218,198 +233,278 @@ setFacultyMap(subjectFacultyMap)
   )
 
   return (
-    <div className="app-shell">
-      <div className="page-frame">
-
-        <header className="dashboard-header dashboard-header-inner">
+    <div className="portal-shell">
+      <aside className="portal-sidebar">
+        <div className="flex items-center gap-3">
+          <span className="brand-mark">AF</span>
           <div>
-            <p className="eyebrow">Student Dashboard</p>
-            <h1 className="page-title">
-              Welcome{student?.name ? `, ${student.name}` : ''}
-            </h1>
-            <p className="muted-copy">
-              {student?.dept} - Semester {student?.semester}
-            </p>
+            <p className="font-bold text-slate-950">AttendFlow</p>
+            <p className="text-xs text-slate-500">Student portal</p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="metric-pill">
-              {requests.length} request{requests.length === 1 ? '' : 's'} submitted
+        </div>
+
+        <nav className="mt-6 flex gap-2 overflow-x-auto lg:block lg:space-y-1 lg:overflow-visible">
+          <a href="#dashboard" className="sidebar-link sidebar-link-active">
+            <Home className="h-4 w-4" />
+            Dashboard
+          </a>
+          <a href="#new-request" className="sidebar-link">
+            <PlusCircle className="h-4 w-4" />
+            New Request
+          </a>
+          <a href="#my-requests" className="sidebar-link">
+            <ClipboardList className="h-4 w-4" />
+            My Requests
+          </a>
+        </nav>
+
+        <button
+          onClick={async () => {
+            await supabase.auth.signOut()
+            navigate('/login')
+          }}
+          className="btn-secondary mt-5 w-full lg:mt-8"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </button>
+      </aside>
+
+      <main className="portal-main">
+        <div className="portal-content">
+          <header id="dashboard" className="portal-topbar">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="eyebrow">Student Dashboard</p>
+                <h1 className="page-title">
+                  Welcome{student?.name ? `, ${student.name}` : ''}
+                </h1>
+                <p className="muted-copy">
+                  {student?.dept} - Semester {student?.semester}
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  await supabase.auth.signOut()
+                  navigate('/login')
+                }}
+                className="btn-secondary"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
             </div>
-            <button
-              onClick={async () => {
-                await supabase.auth.signOut()
-                navigate('/login')
-              }}
-              className="btn-secondary"
-            >
-              Sign out
-            </button>
-          </div>
-        </header>
+          </header>
 
-        {(error || success) && (
-          <div className={`alert ${
-            error ? 'alert-error' : 'alert-success'
-          }`}>
-            {error || success}
-          </div>
-        )}
+          <section className="summary-grid">
+            <article className="summary-card">
+              <div className="summary-icon">
+                <ClipboardList className="h-5 w-5" />
+              </div>
+              <p className="mt-4 text-sm font-medium text-slate-500">Total requests</p>
+              <p className="mt-1 text-3xl font-bold text-slate-950">{requests.length}</p>
+            </article>
+            <article className="summary-card">
+              <div className="summary-icon">
+                <Clock3 className="h-5 w-5" />
+              </div>
+              <p className="mt-4 text-sm font-medium text-slate-500">Pending</p>
+              <p className="mt-1 text-3xl font-bold text-slate-950">{pendingCount}</p>
+            </article>
+            <article className="summary-card">
+              <div className="summary-icon">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <p className="mt-4 text-sm font-medium text-slate-500">Approved</p>
+              <p className="mt-1 text-3xl font-bold text-slate-950">{approvedCount}</p>
+            </article>
+            <article className="summary-card">
+              <div className="summary-icon">
+                <XCircle className="h-5 w-5" />
+              </div>
+              <p className="mt-4 text-sm font-medium text-slate-500">Rejected</p>
+              <p className="mt-1 text-3xl font-bold text-slate-950">{rejectedCount}</p>
+            </article>
+          </section>
 
-        <section className="surface-card">
-          <div className="section-heading">
-            <h2 className="section-title">New attendance request</h2>
-            <p className="section-subtitle">Submit co-curricular, medical, or sports consideration details.</p>
-          </div>
+          {(error || success) && (
+            <div className={`alert ${
+              error ? 'alert-error' : 'alert-success'
+            }`}>
+              {error || success}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="grid gap-5 p-5 sm:p-6 lg:grid-cols-2">
-            <div className="block lg:col-span-2">
-              <span className="text-sm font-medium text-slate-700">Subjects</span>
-              <p className="text-xs text-slate-500 mb-2">Select all subjects you were absent for</p>
-              <div className="border border-slate-300 rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
-                {subjects.map(s => {
-                  const assigned = facultyMap[s.subject_code]
-                  return (
-                    <label key={s.subject_code} className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedSubjects.includes(s.subject_code)}
-                        onChange={() => toggleSubject(s.subject_code)}
-                        className="accent-blue-600"
-                      />
-                      <span className="text-sm text-slate-700">
-                        {s.subject_code} — {s.subject_name}
-                        {assigned
-                          ? <span className="text-slate-400 ml-1">({assigned.faculty_name})</span>
-                          : <span className="text-red-400 ml-1">(no faculty assigned)</span>}
-                      </span>
-                    </label>
-                  )
-                })}
+          <section id="new-request" className="surface-card">
+            <div className="section-heading">
+              <div className="flex items-center gap-3">
+                <span className="summary-icon">
+                  <FileUp className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 className="section-title">New attendance request</h2>
+                  <p className="section-subtitle">Submit co-curricular, medical, or sports consideration details.</p>
+                </div>
               </div>
             </div>
 
-            <label className="block">
-              <span className="field-label">Category</span>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-                className="field-input"
-              >
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="field-label">Proof file</span>
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleProofChange}
-                className="file-input"
-              />
-              <span className="helper-text">Optional. PDF, JPG, JPEG, or PNG up to 5 MB.</span>
-            </label>
-
-            <label className="block">
-              <span className="field-label">Start date</span>
-              <input
-                name="start_date"
-                type="date"
-                value={formData.start_date}
-                onChange={handleChange}
-                required
-                className="field-input"
-              />
-            </label>
-
-            <label className="block">
-              <span className="field-label">End date</span>
-              <input
-                name="end_date"
-                type="date"
-                value={formData.end_date}
-                onChange={handleChange}
-                required
-                className="field-input"
-              />
-            </label>
-
-            <label className="block lg:col-span-2">
-              <span className="field-label">Description</span>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                required
-                rows="4"
-                placeholder="Describe the event, reason, or activity for this request."
-                className="field-input min-h-28 resize-none"
-              />
-            </label>
-
-            <div className="lg:col-span-2">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="btn-primary w-full sm:w-auto"
-              >
-                {submitting ? 'Submitting...' : 'Submit request'}
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <section className="surface-card">
-          <div className="section-heading">
-            <h2 className="section-title">My requests</h2>
-            <p className="section-subtitle">Track every submitted request and faculty remark.</p>
-          </div>
-          {requests.length === 0 ? (
-            <div className="empty-state">
-              <h3 className="text-base font-semibold text-slate-950">No requests yet</h3>
-              <p className="mt-1 text-sm text-slate-500">Submit one above and it will appear here.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Subject</th>
-                    <th>Faculty</th>
-                    <th>Category</th>
-                    <th>Dates</th>
-                    <th>Status</th>
-                    <th>Remark</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {requests.map(req => (
-                    <tr key={req.request_id}>
-                      <td className="font-semibold text-slate-950">{req.subject_code}</td>
-                      <td className="text-slate-600">
-                        {facultyMap[req.subject_code]?.faculty_name || '-'}
-                      </td>
-                      <td className="text-slate-600">{req.category}</td>
-                      <td className="text-slate-600">{formatDateRange(req.start_date, req.end_date)}</td>
-                      <td>
-                        <span className={`status-pill ${statusClass(req.status)}`}>
-                          {req.status}
+            <form onSubmit={handleSubmit} className="grid gap-5 p-5 sm:p-6 lg:grid-cols-2">
+              <div className="block lg:col-span-2">
+                <span className="field-label">Subjects</span>
+                <p className="helper-text mb-2">Select all subjects you were absent for</p>
+                <div className="subject-picker">
+                  {subjects.map(s => {
+                    const assigned = facultyMap[s.subject_code]
+                    return (
+                      <label key={s.subject_code} className="subject-option">
+                        <input
+                          type="checkbox"
+                          checked={selectedSubjects.includes(s.subject_code)}
+                          onChange={() => toggleSubject(s.subject_code)}
+                          className="mt-1 accent-blue-600"
+                        />
+                        <span className="text-sm leading-5 text-slate-700">
+                          <span className="font-semibold text-slate-900">{s.subject_code}</span> - {s.subject_name}
+                          {assigned
+                            ? <span className="ml-1 text-slate-400">({assigned.faculty_name})</span>
+                            : <span className="ml-1 text-red-500">(no faculty assigned)</span>}
                         </span>
-                      </td>
-                      <td className="max-w-xs text-slate-600">
-                        {req.faculty_remark || <span className="text-slate-400">No remark</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
 
-      </div>
+              <label className="block">
+                <span className="field-label">Category</span>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                  className="field-input"
+                >
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="field-label">Proof file</span>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleProofChange}
+                  className="file-input"
+                />
+                <span className="helper-text">Optional. PDF, JPG, JPEG, or PNG up to 5 MB.</span>
+              </label>
+
+              <label className="block">
+                <span className="field-label">Start date</span>
+                <input
+                  name="start_date"
+                  type="date"
+                  value={formData.start_date}
+                  onChange={handleChange}
+                  required
+                  className="field-input"
+                />
+              </label>
+
+              <label className="block">
+                <span className="field-label">End date</span>
+                <input
+                  name="end_date"
+                  type="date"
+                  value={formData.end_date}
+                  onChange={handleChange}
+                  required
+                  className="field-input"
+                />
+              </label>
+
+              <label className="block lg:col-span-2">
+                <span className="field-label">Description</span>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                  rows="4"
+                  placeholder="Describe the event, reason, or activity for this request."
+                  className="field-input min-h-28 resize-none"
+                />
+              </label>
+
+              <div className="lg:col-span-2">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-primary w-full sm:w-auto"
+                >
+                  <FileUp className="h-4 w-4" />
+                  {submitting ? 'Submitting...' : 'Submit request'}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section id="my-requests" className="surface-card">
+            <div className="section-heading">
+              <div className="flex items-center gap-3">
+                <span className="summary-icon">
+                  <BookOpen className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 className="section-title">My requests</h2>
+                  <p className="section-subtitle">Track every submitted request and faculty remark.</p>
+                </div>
+              </div>
+            </div>
+            {requests.length === 0 ? (
+              <div className="empty-state">
+                <h3 className="text-base font-semibold text-slate-950">No requests yet</h3>
+                <p className="mt-1 text-sm text-slate-500">Submit one above and it will appear here.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Subject</th>
+                      <th>Faculty</th>
+                      <th>Category</th>
+                      <th>Dates</th>
+                      <th>Status</th>
+                      <th>Remark</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {requests.map(req => (
+                      <tr key={req.request_id}>
+                        <td className="font-semibold text-slate-950">{req.subject_code}</td>
+                        <td className="text-slate-600">
+                          {facultyMap[req.subject_code]?.faculty_name || '-'}
+                        </td>
+                        <td className="text-slate-600">{req.category}</td>
+                        <td className="text-slate-600">{formatDateRange(req.start_date, req.end_date)}</td>
+                        <td>
+                          <span className={`status-pill ${statusClass(req.status)}`}>
+                            {req.status}
+                          </span>
+                        </td>
+                        <td className="max-w-xs text-slate-600">
+                          {req.faculty_remark || <span className="text-slate-400">No remark</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
     </div>
   )
 }

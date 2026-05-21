@@ -34,38 +34,46 @@ function Signup() {
   }
 
   useEffect(() => {
-    if (
-      role === 'faculty' &&
-      formData.dept.trim().length >= 4
-    ) {
-      const fetchSubjects = async () => {
-        const normalizedDept = formData.dept
-          .trim()
-          .toUpperCase()
-
-        console.log('Fetching subjects for:', normalizedDept)
-
-        const { data, error } = await supabase
-          .from('subjects')
-          .select('subject_code, subject_name, semester')
-          .eq('dept', normalizedDept)
-          .order('semester')
-
-        console.log('Subjects response:', data)
-
-        if (error) {
-          console.error(error)
-        }
-
-        setSubjects(data || [])
-      }
-
-      fetchSubjects()
-    } else {
+  const fetchSubjects = async () => {
+    if (role !== 'faculty') {
       setSubjects([])
       setSelectedSubjects([])
+      return
     }
-  }, [role, formData.dept])
+
+    const normalizedDept = formData.dept
+      .trim()
+      .toUpperCase()
+
+    if (!normalizedDept) {
+      setSubjects([])
+      return
+    }
+
+    console.log('Fetching for:', normalizedDept)
+
+    const { data, error } = await supabase
+      .from('subjects')
+      .select('subject_code, subject_name, semester')
+      .eq('dept', normalizedDept)
+      .order('semester')
+
+    console.log('Returned subjects:', data)
+
+    if (error) {
+      console.error(error)
+      return
+    }
+
+    setSubjects(data || [])
+  }
+
+  const timeout = setTimeout(() => {
+    fetchSubjects()
+  }, 300)
+
+  return () => clearTimeout(timeout)
+}, [role, formData.dept])
 
   const toggleSubject = (code) => {
     setSelectedSubjects(prev =>

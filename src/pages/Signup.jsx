@@ -20,7 +20,7 @@ function Signup() {
   const [selectedSubjects, setSelectedSubjects] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
+  const [facultyCode, setFacultyCode] = useState('')
   const handleChange = (e) => {
     const { name, value } = e.target
 
@@ -109,6 +109,11 @@ function Signup() {
         setError('Email must match your USN')
         return
       }
+      const usnRegex = /^4PA(22|23|24|25)(AI|CS|IC|EC|BT)[0-9]{3}$/
+      if (!usnRegex.test(formData.usn.toUpperCase())) {
+        setError('Enter a valid USN')
+        return
+    }
     }
 
     const validDepts = ['AIML', 'CSE', 'EC', 'BT', 'ICSB']
@@ -116,9 +121,9 @@ function Signup() {
       setError('Department must be one of: AIML, CSE, EC, BT, ICSB')
       return
     }
-    const usnRegex = /^4PA(22|23|24|25)(AI|CS|IC|EC|BT)[0-9]{3}$/
-    if (!usnRegex.test(formData.usn.toUpperCase())) {
-      setError('Enter a valid PACE USN')
+    
+    if (role === 'faculty' && facultyCode !== import.meta.env.VITE_FACULTY_CODE) {
+      setError('Invalid faculty access code')
       return
     }
 
@@ -360,6 +365,16 @@ function Signup() {
                   No subjects found for {formData.dept}
                 </p>
               )}
+            {role === 'faculty' && (
+              <input
+                type="password"
+                placeholder="Faculty access code"
+                value={facultyCode}
+                onChange={(e) => setFacultyCode(e.target.value)}
+                required
+                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
 
             {error && (
               <p className="alert alert-error">

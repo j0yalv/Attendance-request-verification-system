@@ -89,7 +89,7 @@ function Signup() {
     setError('')
 
     if (!formData.email.endsWith('@pace.edu.in')) {
-      setError('Use your college email (@pace.edu.in) only')
+      setError('Use your college email only')
       return
     }
 
@@ -100,6 +100,25 @@ function Signup() {
 
     if (role === 'faculty' && selectedSubjects.length === 0) {
       setError('Please select at least one subject you teach')
+      return
+    }
+    if (role === 'student') {
+      const emailPrefix = formData.email.split('@')[0].toUpperCase()
+      const usn = formData.usn.toUpperCase()
+      if (emailPrefix !== usn) {
+        setError('Email must match your USN')
+        return
+      }
+    }
+
+    const validDepts = ['AIML', 'CSE', 'EC', 'BT', 'ICSB']
+    if (!validDepts.includes(formData.dept.toUpperCase())) {
+      setError('Department must be one of: AIML, CSE, EC, BT, ICSB')
+      return
+    }
+    const usnRegex = /^4PA(22|23|24|25)(AI|CS|IC|EC|BT)[0-9]{3}$/
+    if (!usnRegex.test(formData.usn.toUpperCase())) {
+      setError('Enter a valid PACE USN')
       return
     }
 
@@ -261,15 +280,20 @@ function Signup() {
               className="field-input min-h-11 w-full text-base"
             />
 
-            <input
+            <select
               name="dept"
-              type="text"
-              placeholder="Department (e.g. AIML)"
               value={formData.dept}
               onChange={handleChange}
               required
-              className="field-input min-h-11 w-full text-base"
-            />
+              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Department</option>
+              <option value="AIML">AIML</option>
+              <option value="CSE">CSE</option>
+              <option value="EC">EC</option>
+              <option value="BT">BT</option>
+              <option value="ICSB">ICSB</option>
+            </select>
 
             {role === 'student' && (
               <>
